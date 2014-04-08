@@ -173,19 +173,29 @@ public class AnvilMapper
 
 	public static void main(String [] args)
 	{
-		if (args.length >= 1 && args.length <= 2)
+		if (args.length >= 1 && args.length <= 3)
 		{
 			File worldDir = new File(args[0]);
-			File blockColoursFile = new File("MapWriterBlockColours.txt");
-
+			File blockColoursFile = null;
 			File imageDir;
-			if (args.length == 2)
+
+			if (args.length >= 2)
 			{
 				imageDir = new File(args[1] + "/images");
 			}
 			else
 			{
 				imageDir = new File("images");
+			}
+
+			if (args.length >= 3)
+			{
+				blockColoursFile = new File(args[2]);
+			}
+
+			if (blockColoursFile == null || blockColoursFile.isFile() == false)
+			{
+				blockColoursFile = new File("MapWriterBlockColours.txt");
 			}
 
 			if (worldDir.isDirectory())
@@ -200,7 +210,7 @@ public class AnvilMapper
 		}
 		else
 		{
-			RegionManager.logInfo("usage: java AnvilMapper <worldDirectory> [imageDirectory]");
+			RegionManager.logInfo("usage: java AnvilMapper <worldDirectory> [imageDirectory] [blockColoursFile]");
 		}
 	}
 }
