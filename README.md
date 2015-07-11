@@ -1,16 +1,18 @@
 Anvil Mapper
 ============
 
-Usage Instructions:
-* Copy the contents of the world folder that you want mapped to 'world'.
-* The '*.mca' region files should now be in the 'world\region' folder.
-* Run 'run.bat'.
-* Generated region images will be output to 'images'.
-* Open 'index.html' in a web browser to view the map.
-
 Compilation Instructions:
-* Depends on the region file code in MapWriter so you will need to clone MapWriter from GitHub to build AnvilMapper.
-* Compile using javac:
-    javac src\anvilmapper\AnvilMapper.java -sourcepath src -sourcepath ..\mapwriter\src -d bin
-* Make sure that you replace "..\mapwriter\src" with the directory you cloned mapwriter to.
+=========================
+* This program depends on the region file code in MapWriter. A copy of MapWriter will be cloned via the compile.sh script.
+* On Linux, you should be able to compile the program like so:
+  - git clone https://github.com/maruohon/anvilmapper.git
+  - cd anvilmapper
+  - bash compile.sh
 
+Usage Instructions:
+===================
+* An example bash script for running the program can be found in anvilmapper.sh
+* You can optionally specify the output image directory and the block colours file on the command line for the program, like so:
+* Usage: java -cp bin anvilmapper/AnvilMapper </path/to/minecraftdirectory/world> [/path/to/outputdirectory] [/path/to/blockcoloursfile]
+* This allows you to easily use different block colour mappings for different worlds/saves
+* Open 'index.html' in a web browser to view the map.
