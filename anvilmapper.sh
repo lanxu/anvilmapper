@@ -18,20 +18,20 @@ OUTPUT_BASE_DIR=/path/to/webserver/anvilmapper
 if [ $# -ne 2 ]
 then
 	echo "Usage: $0 <server instance name> <block colours file type>"
-	echo "Example 1: $0 vanillaserver vanilla"
+	echo "Example 1: $0 my_vanilla_server vanilla"
 	echo "Example 2: $0 ftb_dw20_164 modded_164"
 	exit 1
 fi
 
 PWD=`pwd`
 cd ${ANVILMAPPER_DIR}
-BLOCK_COLOURS_FILE="../MapWriterBlockColours_${2}.txt"
+BLOCK_COLOR_FILE="../MapWriterBlockColours_${2}.txt"
 
 if [ -f "${2}" ]
 then
-	BLOCK_COLOURS_FILE=${2}
+	BLOCK_COLOR_FILE=${2}
 fi
 
-java -cp bin anvilmapper/AnvilMapper "${MINECRAFT_BASE_DIR}/${1}/world" "${OUTPUT_BASE_DIR}/${1}" "${BLOCK_COLOURS_FILE}"
+java -cp bin anvilmapper/AnvilMapper --world "${MINECRAFT_BASE_DIR}/${1}/world" --out "${OUTPUT_BASE_DIR}/${1}" --block-colors "${BLOCK_COLOR_FILE}"
 
 cd ${PWD}
