@@ -332,7 +332,8 @@ public class BlockColours
 		}
 		catch (NumberFormatException e)
 		{
-			RegionManager.logWarning("Error: Invalid block color line '%s'", String.join(" ", lineParts));
+			System.err.printf("Error: Invalid block color line '%s'", String.join(" ", lineParts));
+			e.printStackTrace();
 		}
 	}
 	

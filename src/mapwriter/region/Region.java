@@ -111,9 +111,14 @@ public class Region {
 	}
 	
 	public String toString() {
-		return String.format("(%d,%d) z%d dim%d", this.x, this.z, this.zoomLevel, this.dimension);
+		return String.format("(%d,%d) z%d DIM%d", this.x, this.z, this.zoomLevel, this.dimension);
 	}
-	
+
+	public String toStringNoDim()
+	{
+		return String.format("(%d,%d) z%d", this.x, this.z, this.zoomLevel);
+	}
+
 	private static File addDimensionDirToPath(File dir, int dimension) {
 		if (dimension != 0) {
 			dir = new File(dir, "DIM" + dimension);
