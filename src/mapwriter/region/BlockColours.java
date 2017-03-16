@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
 public class BlockColours
 {
 	private static final Pattern PATTERN_BLOCK_STRING_ID = Pattern.compile("([a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+)");
-	private static final Pattern PATTERN_BIOME_LINE_NAME = Pattern.compile("^biome ([a-zA-Z0-9_\\+ -]+) ([a-fA-F0-9]{6}) ([a-fA-F0-9]{6}) ([a-fA-F0-9]{6})$");
+	private static final Pattern PATTERN_BIOME_LINE_NAME = Pattern.compile("^biome ([a-zA-Z0-9_\\+\\(\\) -]+) ([a-fA-F0-9]{6}) ([a-fA-F0-9]{6}) ([a-fA-F0-9]{6})$");
 	private static final Pattern PATTERN_BIOME_LINE_ID = Pattern.compile("^biome ([0-9]+) ([a-fA-F0-9]{6}) ([a-fA-F0-9]{6}) ([a-fA-F0-9]{6})$");	
 	public static final int MAX_BLOCKS = 4096;
 	public static final int MAX_META = 16;
@@ -354,7 +354,7 @@ public class BlockColours
 				{
 					String[] lineSplit = line.split(" ");
 
-					if (lineSplit[0].equals("biome") && lineSplit.length == 5)
+					if (lineSplit[0].equals("biome") && lineSplit.length >= 5)
 					{
 						this.loadBiomeLine(line);
 					}
