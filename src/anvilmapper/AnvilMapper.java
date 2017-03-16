@@ -77,7 +77,7 @@ public class AnvilMapper
 
 								if (this.verbose)
 								{
-									System.out.printf("DIM%d: Loaded file %s as region %s", regionFileName, region.toStringNoDim());
+									System.out.printf("DIM%d: Loaded file %s as region %s\n", dimension, regionFileName, region.toStringNoDim());
 								}
 
 								region.reload();
@@ -243,7 +243,7 @@ public class AnvilMapper
 				{
 					blockColorsLocation = argValue;
 				}
-				else if (args[i].equals("verbose"))
+				else if (args[i].equals("--verbose"))
 				{
 					verbose = true;
 				}
