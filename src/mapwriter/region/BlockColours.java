@@ -207,14 +207,14 @@ public class BlockColours
 
 						if (idInt == null)
 						{
-							throw new NumberFormatException();
+							throw new NumberFormatException("Missing biome ID map entry for '" + idStr + "'");
 						}
 
 						startBiomeId = idInt;
 					}
 					else
 					{
-						throw new NumberFormatException();
+						throw new NumberFormatException("Biome color line didn't match the regex");
 					}
 				}
 
@@ -277,7 +277,7 @@ public class BlockColours
 
 					if (idInt == null)
 					{
-						throw new NumberFormatException();
+						throw new NumberFormatException("Missing block ID map entry for '" + idStr + "'");
 					}
 
 					startBlockId = idInt;
