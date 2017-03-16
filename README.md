@@ -3,8 +3,6 @@ Anvil Mapper
 
 Compilation Instructions:
 =========================
-* This program depends on the region file code in MapWriter.
-* MapWriter is included as a git submodule, so it will automatically get the correct, custom version of MapWriter.
 * On Linux, you should be able to compile the program like so:
   - git clone https://github.com/maruohon/anvilmapper.git
   - cd anvilmapper

@@ -85,7 +85,7 @@ function initialize() {
 		panControl: false,
 		scaleControl: false,
 		mapTypeControlOptions: {
-			mapTypeIds: ['overworld', 'nether']
+			mapTypeIds: ['overworld', 'nether', 'end']
 		}
 	};
 	
@@ -113,14 +113,27 @@ function initialize() {
 		minZoom: 0,
 		name: 'Nether'
 	});
-	
+
+	var mapTypeEnd = new google.maps.ImageMapType({
+		getTileUrl: function(coord, zoom) {
+			var z = 5 - zoom;
+			return 'images/DIM1/z' + z + '/' + coord.x + '.' + coord.y + '.png';
+		},
+		tileSize: new google.maps.Size(512, 512),
+		maxZoom: 6,
+		minZoom: 0,
+		name: 'End'
+	});
+
 	// use the custom latitude and logitude projection
 	mapTypeOverworld.projection = new ProjectionCartesian();
 	mapTypeNether.projection = new ProjectionCartesian();
+	mapTypeEnd.projection = new ProjectionCartesian();
 	
 	// add the map type to the map
 	map.mapTypes.set('overworld', mapTypeOverworld);
 	map.mapTypes.set('nether', mapTypeNether);
+	map.mapTypes.set('end', mapTypeEnd);
 	map.setMapTypeId('overworld');
 	
 	// listener for clicks on the map surface
@@ -143,10 +156,12 @@ function initialize() {
 
 <body onload="initialize()">
 
-<h4>Minecraft World Map</h4>
-<div id="map_canvas" style="width: 800px; height: 600px;"></div>
-Right click map to show/hide markers.<br />
-Markers can be created by editing 'index.html'.<br />
+	<h4>Minecraft World Map</h4>
+	<div id="map_canvas" style="width: 800px; height: 600px;">
+	</div>
+
+	Right click map to show/hide markers.<br />
+	Markers can be created by editing 'index.html'.<br />
 
 </body>
 

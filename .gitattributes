@@ -1,0 +1,10 @@
+# text stuff
+* text=auto
+*.bat text eol=crlf
+*.java text eol=crlf
+*.md text
+*.sh text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+MapWriterBlockColours.txt text eol=lf
+README.md text eol=lf
