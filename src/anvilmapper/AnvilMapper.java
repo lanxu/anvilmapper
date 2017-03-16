@@ -6,13 +6,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.Map;
 import java.util.logging.Logger;
-
 import javax.imageio.ImageIO;
-
-import mapwriter.region.RegionManager;
-import mapwriter.region.Region;
+import anvilmapper.util.FileUtils;
+import anvilmapper.util.IdMaps;
+import anvilmapper.util.IdMaps.MapType;
 import mapwriter.region.BlockColours;
+import mapwriter.region.Region;
+import mapwriter.region.RegionManager;
 
 /* TODO:
  *  - Make it possible to load BlockColours from a file (make BlockColours Serializable?)
@@ -21,34 +23,38 @@ import mapwriter.region.BlockColours;
 
 public class AnvilMapper
 {
-	private final static Logger log = Logger.getLogger("anvilmapper");
-
-	static
-	{
-		RegionManager.logger = log;
-	}
-
+	public static final Logger LOGGER = Logger.getLogger("anvilmapper");
 	private File worldDir;
 	private File imageDir;
 	private BlockColours blockColours;
 	private RegionManager regionManager;
+	private static final String DEFAULT_FILE_BLOCK_COLORS = "MapWriterBlockColours.txt";
+	private static final String DEFAULT_FILE_BLOCK_ID_MAP = "block_ids.txt";
+	private static final String DEFAULT_FILE_BIOME_ID_MAP = "biome_ids.txt";
+	private static final String DEFAULT_DIR_WORLD = "world";
 
-	public AnvilMapper(File worldDir, File imageDir, File blockColoursFile)
+	static
+	{
+		RegionManager.logger = LOGGER;
+	}
+
+	public AnvilMapper(File worldDir, File imageDir, File blockColoursFile, Map<String, Integer> biomeIdMap, Map<String, Integer> blockIdMap)
 	{
 		this.worldDir = worldDir;
 		this.imageDir = imageDir;
-		this.blockColours = new BlockColours();
+		this.blockColours = new BlockColours(biomeIdMap, blockIdMap);
 		this.blockColours.loadFromFile(blockColoursFile);
 		this.regionManager = new RegionManager(this.worldDir, this.imageDir, this.blockColours);
-		this.imageDir.mkdirs();
 	}
 
 	public void processDimension(File dimDir, int dimension)
 	{
 		File regionDir = new File(dimDir, "region");
+
 		if (dimDir.isDirectory())
 		{
-			File[] regionFilesList = regionDir.listFiles();
+			File[] regionFilesList = regionDir.listFiles(FileUtils.ANVIL_REGION_FILE_FILTER);
+
 			if (regionFilesList != null)
 			{
 				for (File regionFileName : regionFilesList)
@@ -66,7 +72,7 @@ public class AnvilMapper
 								int rZ = Integer.parseInt(baseNameSplit[2]);
 
 								Region region = this.regionManager.getRegion(rX << Region.SHIFT, rZ << Region.SHIFT, 0, dimension);
-								RegionManager.logInfo("loaded file %s as region %s", regionFileName, region);
+								RegionManager.logInfo("Loaded file %s as region %s", regionFileName, region);
 								region.reload();
 								region.updateZoomLevels();
 								region.saveToImage();
@@ -75,28 +81,28 @@ public class AnvilMapper
 							}
 							catch (NumberFormatException e)
 							{
-								RegionManager.logWarning("could not get region x and z for region file %s", regionFileName);
+								RegionManager.logWarning("Could not get region x and z for region file %s", regionFileName);
 							}
 						}
 						else
 						{
-							RegionManager.logWarning("region file %s did not pass the file name check", regionFileName);
+							RegionManager.logWarning("Region file %s did not pass the file name check", regionFileName);
 						}
 					}
 				}
 
-				RegionManager.logInfo("closing region manager");
+				RegionManager.logInfo("Closing region manager");
 				this.regionManager.close();
 
 			}
 			else
 			{
-				RegionManager.logInfo("no region files found for dimension %d", dimension);
+				RegionManager.logInfo("No region files found for dimension %d", dimension);
 			}
 		}
 		else
 		{
-			RegionManager.logInfo("no region directory in dimension directory %s", dimDir);
+			RegionManager.logInfo("No region directory in dimension directory %s", dimDir);
 		}
 	}
 
@@ -119,9 +125,10 @@ public class AnvilMapper
 			}
 			catch (NumberFormatException e)
 			{
-				RegionManager.logWarning("could not dimension number for dimension directory %s", dimDir);
+				RegionManager.logWarning("Failed to pase dimension number for dimension directory '%s'", dimDir);
 			}
 		}
+
 		this.processDimension(this.worldDir, 0);
 	}
 
@@ -173,44 +180,119 @@ public class AnvilMapper
 
 	public static void main(String [] args)
 	{
-		if (args.length >= 1 && args.length <= 3)
+		if (args.length < 1)
 		{
-			File worldDir = new File(args[0]);
-			File blockColoursFile = null;
-			File imageDir;
+			RegionManager.logInfo("usage: java AnvilMapper" +
+							" [--world /path/to/world_save_directory]" +
+							" [--out /path/to/output_directory]" +
+							" [--block-colors /path/to/block_colors_file]" +
+							" [--block-id-map /path/to/block_id_map]" +
+							" [--biome-id-map /path/to/biome_id_map]");
+			RegionManager.logInfo("The default locations are:\n" +
+								"  block-colors = MapWriterBlockColours.txt\n" +
+								"  block-id-map = block_ids.txt\n" +
+								"  biome_id_map = biome_ids.txt");
+			RegionManager.logInfo("The block and biome ID map files are needed if the Block Colours\n" +
+								"  file uses string names (as it does in the recent version of MapWriter),\n" +
+								"  and if there is no block ID and biome ID map in the level.dat file\n" +
+								"  (as there isn't in vanilla worlds).\n" +
+								"  You can get the block and biome ID map files using the TellMe mod, and there are also\n" +
+								"  ready made ID map files for vanilla Minecraft at <add URL here>.");
 
-			if (args.length >= 2)
-			{
-				imageDir = new File(args[1] + "/images");
-			}
-			else
-			{
-				imageDir = new File("images");
-			}
+			return;
+		}
 
-			if (args.length >= 3)
-			{
-				blockColoursFile = new File(args[2]);
-			}
+		String outputLocation = null;
+		String worldLocation = DEFAULT_DIR_WORLD;
+		String blockColorsLocation = DEFAULT_FILE_BLOCK_COLORS;
+		String biomeIdMapLocation = DEFAULT_FILE_BIOME_ID_MAP;
+		String blockIdMapLocation = DEFAULT_FILE_BLOCK_ID_MAP;
 
-			if (blockColoursFile == null || blockColoursFile.isFile() == false)
+		for (int i = 0; i < args.length; i++)
+		{
+			if (args[i].startsWith("--"))
 			{
-				blockColoursFile = new File("MapWriterBlockColours.txt");
-			}
+				String argValue = null;
 
-			if (worldDir.isDirectory())
-			{
-				AnvilMapper anvilMapper = new AnvilMapper(worldDir, imageDir, blockColoursFile);
-				anvilMapper.processWorld();
-			}
-			else
-			{
-				RegionManager.logError("world directory '%s' does not exist\n", worldDir);
+				if ((argValue = getArgumentValue(args, "world", i)) != null)
+				{
+					worldLocation = argValue;
+				}
+				else if ((argValue = getArgumentValue(args, "out", i)) != null)
+				{
+					outputLocation = argValue;
+				}
+				else if ((argValue = getArgumentValue(args, "biome-id-map", i)) != null)
+				{
+					biomeIdMapLocation = argValue;
+				}
+				else if ((argValue = getArgumentValue(args, "block-id-map", i)) != null)
+				{
+					blockIdMapLocation = argValue;
+				}
+				else if ((argValue = getArgumentValue(args, "block-colors", i)) != null)
+				{
+					blockColorsLocation = argValue;
+				}
 			}
 		}
-		else
+
+		File worldDir = new File(worldLocation);
+		File imageDir = outputLocation != null ? new File(outputLocation, "images") : new File("images");
+		File blockColorsFile = new File(blockColorsLocation);
+		File blockIdMapFile = new File(blockIdMapLocation);
+		File biomeIdMapFile = new File(biomeIdMapLocation);
+
+		if (blockColorsFile.isFile() == false)
 		{
-			RegionManager.logInfo("usage: java AnvilMapper <worldDirectory> [imageDirectory] [blockColoursFile]");
+			RegionManager.logError("The block colors file '%s' does not exist\n", blockColorsFile);
 		}
+
+		if (worldDir.isDirectory() == false)
+		{
+			RegionManager.logError("The world directory '%s' does not exist\n", worldDir);
+			return;
+		}
+
+		if (imageDir.exists() == false && imageDir.mkdirs() == false)
+		{
+			RegionManager.logError("Failed to create the output image directory '%s'\n", imageDir);
+			return;
+		}
+
+		Map<String, Integer> biomeIdMap = IdMaps.getIdMap(MapType.BIOMES, worldDir, biomeIdMapFile);
+		Map<String, Integer> blockIdMap = IdMaps.getIdMap(MapType.BLOCKS, worldDir, blockIdMapFile);
+
+		/*for (Map.Entry<String, Integer> entry : biomeIdMap.entrySet())
+		{
+			System.out.printf("biome: %30s = %3d\n", entry.getKey(), entry.getValue());
+		}
+
+		for (Map.Entry<String, Integer> entry : blockIdMap.entrySet())
+		{
+			System.out.printf("block: %30s = %4d\n", entry.getKey(), entry.getValue());
+		}*/
+
+		AnvilMapper anvilMapper = new AnvilMapper(worldDir, imageDir, blockColorsFile, biomeIdMap, blockIdMap);
+		anvilMapper.processWorld();
+	}
+
+	private static String getArgumentValue(String[] args, String argName, int argIndex)
+	{
+		if (args.length > argIndex && args[argIndex].startsWith("--"))
+		{
+			String arg = args[argIndex].substring(2, args[argIndex].length());
+
+			if (arg.equals(argName) && args.length > (argIndex + 1))
+			{
+				return args[argIndex + 1];
+			}
+			else if (arg.startsWith(argName) && arg.charAt(argName.length()) == '=')
+			{
+				return arg.substring(argName.length() + 1, arg.length());
+			}
+		}
+
+		return null;
 	}
 }
