@@ -193,7 +193,7 @@ public class RegionFile {
 			}
 		}
 		try {
-			this.fin = new RandomAccessFile(this.file, "rw");
+			this.fin = new RandomAccessFile(this.file, "r");
 			
 			// seek to start 
 			this.fin.seek(0);
