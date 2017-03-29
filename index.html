@@ -36,9 +36,11 @@
   // Set default options for all tilemaps
   var options = {
     attribution: 'anvilmapper',
-    maxZoom: 5,
+    maxZoom: 4,
     minZoom: 0,
+    zoomOffset: -1,
     zoomReverse: true,
+    tileSize: 512,
     //noWrap: true,
     //bounds: mapBounds, 
     //continuousWorld: true,
@@ -58,11 +60,11 @@
   // Map creation with crs.simple (suitable for game maps). Direct
   // lat/lng <-> pixel conversion
   var map = L.map('map', {
-    maxZoom: 5,
+    maxZoom: 4,
     minZoom: 0,
     crs: L.CRS.Simple,
     layers: [overworld], // by default we show overwolds
-  }).setView([0, 0], 3);
+  }).setView([0, 0], 1);
 
   // add tilemap switching controls
   L.control.layers(baseMaps).addTo(map);
