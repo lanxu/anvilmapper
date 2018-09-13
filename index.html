@@ -1,168 +1,74 @@
-<html>
+<!doctype html>
+<html lang="en">
+
 <head>
-<title>Minecraft World Map</title>
-<!--
-You can set your own Google Maps API Key here:
-e.g. <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSxRT67cflfOI5g23bfGeQUcT6xY7Q3WbWA&sensor=false"></script>
--->
-<script src="https://maps.googleapis.com/maps/api/js?&sensor=false"></script>
-<script>
-var markerArray = [];
-var map = null;
-var markerVisibility = true;
-
-// functions to add, hide, and delete markers
-
-function addMarker(x, y, icon, title) {
-	var marker = new google.maps.Marker({
-		position: new google.maps.LatLng(y / 512, x / 512),
-		map: map,
-		icon: icon,
-		title: title + " (" + x + ", " + y + ")"
-	});
-	markerArray.push(marker);
-}
-
-function toggleAllMarkers() {
-	markerVisibility = !markerVisibility;
-	for (i in markerArray) {
-		markerArray[i].setVisible(markerVisibility);
-	}
-}
-
-function deleteAllMarkers() {
-	for (i in markerArray) {
-		markerArray[i].setMap(null);
-	}
-	markerArray.length = 0;
-}
-
-// custom projection
-// lat range is [-4,4] corresponding to y [-512,512] in the zoom level 0 image set
-// lng range is [-4,4] corresponding to x [-512,512] in the zoom level 0 image set
-// in terms of game coordinates:
-//   inGameX = lng * 1024
-//   inGameZ = lat * 1024
-
-function ProjectionCartesian() {};
-
-ProjectionCartesian.prototype.fromLatLngToPoint = function(latLng) {
-	return new google.maps.Point(latLng.lng() * 512 / 32, latLng.lat() * 512 / 32);
-};
-
-ProjectionCartesian.prototype.fromPointToLatLng = function(point, noWrap) {
-	return new google.maps.LatLng(point.y / 512 * 32, point.x / 512 * 32, noWrap);
-};
-
-// icon definitions for markers
-
-var iconSpawn = {
-	path: google.maps.SymbolPath.CIRCLE,
-	fillColor: "red",
-	fillOpacity: 1.0,
-	scale: 4,
-	strokeColor: "black",
-	strokeWeight: 1
-};
-
-var iconPortal = {
-  path: 'M -1,-1 1,-1 1,1 -1,1 z',
-  fillColor: "purple",
-  fillOpacity: 1.0,
-  scale: 4,
-  strokeColor: "black",
-  strokeWeight: 1
-};
-
-// the initialization function, called when the page body loads
-
-function initialize() {
-	var mapOptions = {
-		center: new google.maps.LatLng(0, 0),
-		zoom: 2,
-		streetViewControl: false,
-		zoomControl: true,
-		panControl: false,
-		scaleControl: false,
-		mapTypeControlOptions: {
-			mapTypeIds: ['overworld', 'nether', 'end']
-		}
-	};
-	
-	map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-	
-	// can define multiple mapTypes (similar to how standard google maps has satellite, map, hybrid).
-	var mapTypeOverworld = new google.maps.ImageMapType({
-		getTileUrl: function(coord, zoom) {
-			var z = 5 - zoom;
-			return 'images/z' + z + '/' + coord.x + '.' + coord.y + '.png';
-		},
-		tileSize: new google.maps.Size(512, 512),
-		maxZoom: 6,
-		minZoom: 0,
-		name: 'Overworld'
-	});
-	
-	var mapTypeNether = new google.maps.ImageMapType({
-		getTileUrl: function(coord, zoom) {
-			var z = 5 - zoom;
-			return 'images/DIM-1/z' + z + '/' + coord.x + '.' + coord.y + '.png';
-		},
-		tileSize: new google.maps.Size(512, 512),
-		maxZoom: 6,
-		minZoom: 0,
-		name: 'Nether'
-	});
-
-	var mapTypeEnd = new google.maps.ImageMapType({
-		getTileUrl: function(coord, zoom) {
-			var z = 5 - zoom;
-			return 'images/DIM1/z' + z + '/' + coord.x + '.' + coord.y + '.png';
-		},
-		tileSize: new google.maps.Size(512, 512),
-		maxZoom: 6,
-		minZoom: 0,
-		name: 'End'
-	});
-
-	// use the custom latitude and logitude projection
-	mapTypeOverworld.projection = new ProjectionCartesian();
-	mapTypeNether.projection = new ProjectionCartesian();
-	mapTypeEnd.projection = new ProjectionCartesian();
-	
-	// add the map type to the map
-	map.mapTypes.set('overworld', mapTypeOverworld);
-	map.mapTypes.set('nether', mapTypeNether);
-	map.mapTypes.set('end', mapTypeEnd);
-	map.setMapTypeId('overworld');
-	
-	// listener for clicks on the map surface
-	google.maps.event.addListener(map, 'rightclick', function(event) {
-		toggleAllMarkers();
-	});
-	
-	// add markers
-	//addMarker(0, 0, iconSpawn, "origin");
-	//addMarker(-512, 512, iconSpawn, "");
-	//addMarker(512, -512, iconSpawn, "");
-	//addMarker(-506, -262, iconPortal, "end portal");
-	//addMarker(948, -288, iconPortal, "end portal");
-	//addMarker(-71, 846, iconPortal, "end portal");
-}
-
-</script>
-
+  <meta charset="utf-8">
+  <title>Minecraft World Map</title>
+  <meta name="description" content="Minecraft World Map">
+  <meta name="author" content="anvilmapper">
+  
+  <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.css" />
+  <script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/1.0.3/leaflet.js"></script>
+  <style>
+    html,
+    body {
+      height: 100%;
+      overflow: hidden;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .leaflet-container {
+      background: black;
+    }
+    #map {
+      width: auto;
+      height: 100%;
+    }
+  </style>
 </head>
 
-<body onload="initialize()">
+<body>
+  <div id="map"></div>
 
-	<h4>Minecraft World Map</h4>
-	<div id="map_canvas" style="width: 800px; height: 600px;">
-	</div>
+  <script>
 
-	Right click map to show/hide markers.<br />
-	Markers can be created by editing 'index.html'.<br />
+  // Set default options for all tilemaps
+  var options = {
+    attribution: 'anvilmapper',
+    maxZoom: 4,
+    minZoom: 0,
+    zoomOffset: -1,
+    zoomReverse: true,
+    tileSize: 512,
+    //noWrap: true,
+    //bounds: mapBounds, 
+    //continuousWorld: true,
+  };
+
+  // Create tilemaps for switching
+  var overworld = L.tileLayer('images/z{z}/{x}.{y}.png', options);
+  var nether = L.tileLayer('images/DIM-1/z{z}/{x}.{y}.png', options);
+  var end = L.tileLayer('images/DIM1/z{z}/{x}.{y}.png', options);
+
+  var baseMaps = {
+    "Overworld": overworld,
+    "Nether": nether,
+    "End": end
+  };
+
+  // Map creation with crs.simple (suitable for game maps). Direct
+  // lat/lng <-> pixel conversion
+  var map = L.map('map', {
+    maxZoom: 4,
+    minZoom: 0,
+    crs: L.CRS.Simple,
+    layers: [overworld], // by default we show overwolds
+  }).setView([0, 0], 1);
+
+  // add tilemap switching controls
+  L.control.layers(baseMaps).addTo(map);
+  </script>
 
 </body>
-
 </html>
